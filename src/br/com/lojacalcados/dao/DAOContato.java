@@ -2,6 +2,7 @@ package br.com.lojacalcados.dao;
 
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,18 +18,34 @@ public class DAOContato extends Conexao implements ICRContato{
 		try {
 			if(abrirBanco()) {
 				String query = "Insert Into contato(telefoneresidencial, telefonecelular, telefonecomercial, email)values(?,?,?,?)";
-				pst = cx.prepareStatement(query);
+				/*
+				 *Para execultar a consula é necessario carregá-la em memoria, assim usamos o comndo prepareStantement.
+				 *Foi aplicado também o comando Stantement.RETURN_GENERATED_KEYS para pegar o id gerado no momento do cadastro dos dados pessoais 				 */
+				pst = cx.prepareStatement(query,Statement.RETURN_GENERATED_KEYS);
 				
 				pst.setString(1, obj.getTelefoneResidencial());
 				pst.setString(2, obj.getTelefoneCelular());
 				pst.setString(3,obj.getTelefoneComercial());
 				pst.setString(4, obj.getEmail());
 				
+				int r = pst.executeUpdate();
+				/*
+				 * Para guardar o id gerado no momento da inserção foi execultado o comando getGeneateKeys e alocado na variavel de ResultSet(rs) a coluna
+				 * de id da tabela dados pessoais*/
+				rs = pst.getGeneratedKeys();
 				
-				//Executar o cadastro no banco
-				int rs = pst.executeUpdate();
-				if(rs>0)
-					msg ="Dados cadastrados";
+				/*
+				 * Estamos verificando se o r que guarda o resultado do cadastro é maior que zero(0) e, se for irá retornar o id gerado no momento 
+				 * do cadastro. O Id é do tipo Long(númerico), porem a variavel msg é do tipo String(texto), então foi necessaria fazer a conversão de tipos.
+				 * sendo esta de numero para texto.
+				 */
+
+				if(r>0) {
+					if(rs.next()) {
+						msg =String.valueOf(rs.getLong(1));
+					}
+				}
+					
 				else 
 					msg = "Não foi possível cadastrar";				
 			}else {

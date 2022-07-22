@@ -7,8 +7,9 @@ public class Funcionario {
 	private String nomeFuncionario;
 	private String cargo;
 	private String setor;
-	private String gestor;
-	private Date expediente;
+	private Long gestor;
+	private String expediente;
+	private String foto;
 	private DadosPessoais dadosPessoais;
 	private Endereco endereco;
 	private Contato contato;
@@ -19,8 +20,8 @@ public class Funcionario {
 	}
 
 
-	public Funcionario(Long idFuncionario, String nomeFuncionario, String cargo, String setor, String gestor,
-			Date expediente, DadosPessoais dadosPessoais, Endereco endereco, Contato contato, Usuario usuario) {
+	public Funcionario(Long idFuncionario, String nomeFuncionario, String cargo, String setor, Long gestor,
+			String expediente, String foto, DadosPessoais dadosPessoais, Endereco endereco, Contato contato, Usuario usuario) {
 		this.idFuncionario = idFuncionario;
 		this.nomeFuncionario = nomeFuncionario;
 		this.cargo = cargo;
@@ -74,23 +75,32 @@ public class Funcionario {
 	}
 
 
-	public String getGestor() {
+	public Long getGestor() {
 		return gestor;
 	}
 
 
-	public void setGestor(String gestor) {
+	public void setGestor(Long gestor) {
 		this.gestor = gestor;
 	}
 
 
-	public Date getExpediente() {
+	public String getExpediente() {
 		return expediente;
 	}
 
 
-	public void setExpediente(Date expediente) {
+	public void setExpediente(String expediente) {
 		this.expediente = expediente;
+	}
+	
+	public String getfoto() {
+		return foto;
+	}
+
+
+	public void setfoto(String foto) {
+		this.foto = foto;
 	}
 
 

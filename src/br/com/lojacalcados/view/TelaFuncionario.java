@@ -3,16 +3,20 @@ package br.com.lojacalcados.view;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Date;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
-import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -20,30 +24,53 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.MaskFormatter;
 
+import br.com.lojacalcados.dao.DAOContato;
+import br.com.lojacalcados.dao.DAODadosPessoais;
+import br.com.lojacalcados.dao.DAOEndereco;
+import br.com.lojacalcados.dao.DAOFuncionario;
+import br.com.lojacalcados.dao.DAOUsuario;
+import br.com.lojacalcados.pojo.Contato;
+import br.com.lojacalcados.pojo.DadosPessoais;
+import br.com.lojacalcados.pojo.Endereco;
+import br.com.lojacalcados.pojo.Funcionario;
+import br.com.lojacalcados.pojo.Usuario;
+
 public class TelaFuncionario extends JFrame {
 
 	private JPanel contentPane;
-	private JTextField textField;
+	private JTextField txtNomeFun;
 	private JTextField txtLogradouro;
-	private JTextField textField_2;
+	private JTextField txtNumero;
 	private JTextField txtComplemento;
 	private JTextField txtEstado;
 	private JTextField txtCidade;
 	private JTextField txtBairro;
 	private JTextField txtEmail;
 	private JTextField txtCargo;
-	private JTextField txtNomeCliente;
 	private JFormattedTextField txtCpf;
 	private JFormattedTextField txtDataNascimento;
 	private JLabel lblEmail;
 	private JFormattedTextField txtTelefoneResidencial;
 	private JFormattedTextField txtTelefoneCelular;
 	private JFormattedTextField txtTelefoneComercial;
-	private JTextField txtNumero;
 	private JComboBox cboLogradouro;
 	private JFormattedTextField txtCep;
 	private JTable table;
-	private JScrollPane scrollPane;
+	private JFormattedTextField txtExpediente;
+	//instancias do pojo
+	private Funcionario funcionario = new Funcionario();
+	private DadosPessoais dp = new DadosPessoais();
+	private Contato ct = new Contato();
+	private Endereco end = new Endereco();
+	private Usuario us = new Usuario();
+	//Instancias do DAO
+	private DAOFuncionario daofun= new DAOFuncionario();
+	private DAODadosPessoais daodp = new DAODadosPessoais();
+	private DAOContato daoct = new DAOContato();
+	private DAOEndereco daoend = new DAOEndereco();
+	private DAOUsuario daous = new DAOUsuario();
+	private JTextField txtUsuario;
+	private JPasswordField txtSenha;
 
 	/**
 	 * Launch the application.
@@ -65,9 +92,10 @@ public class TelaFuncionario extends JFrame {
 	 * Create the frame.
 	 */
 	public TelaFuncionario() {
-		setEnabled(false);
+		setResizable(false);
+		setTitle("Tela Funcion\u00E1rio");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1099, 876);
+		setBounds(100, 100, 1099, 826);
 		contentPane = new JPanel();
 		contentPane.setBackground(new Color(25, 25, 112));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -104,10 +132,10 @@ public class TelaFuncionario extends JFrame {
 		lblSexo.setBounds(73, 88, 82, 14);
 		pnldp.add(lblSexo);
 		
-		textField = new JTextField();
-		textField.setColumns(10);
-		textField.setBounds(165, 8, 339, 20);
-		pnldp.add(textField);
+		txtNomeFun = new JTextField();
+		txtNomeFun.setColumns(10);
+		txtNomeFun.setBounds(165, 8, 339, 20);
+		pnldp.add(txtNomeFun);
 		
 		try {
 		txtCpf = new JFormattedTextField(new MaskFormatter("###.###.###-##"));
@@ -123,13 +151,14 @@ public class TelaFuncionario extends JFrame {
 		}
 		
 		JComboBox cboSexo = new JComboBox();
+		cboSexo.setModel(new DefaultComboBoxModel(new String[] {"Masculino", "Feminino", "Outros"}));
 		cboSexo.setBounds(165, 85, 97, 22);
 		pnldp.add(cboSexo);
 		
 		JPanel pnlEndereco = new JPanel();
 		pnlEndereco.setLayout(null);
 		pnlEndereco.setBackground(Color.WHITE);
-		pnlEndereco.setBounds(10, 298, 1059, 115);
+		pnlEndereco.setBounds(10, 599, 1054, 136);
 		contentPane.add(pnlEndereco);
 		
 		JLabel lblTipo = new JLabel("Tipo Logradouro");
@@ -181,23 +210,28 @@ public class TelaFuncionario extends JFrame {
 		lblCompleto.setBounds(525, 11, 101, 14);
 		pnlEndereco.add(lblCompleto);
 		
-		JComboBox cboLogradouro = new JComboBox();
+		cboLogradouro = new JComboBox();
+		cboLogradouro.setModel(new DefaultComboBoxModel(new String[] {"Rua", "Avenida", "Pra\u00E7a", "Alameda", "Viela", "Estrada", "Travessa"}));
 		cboLogradouro.setBounds(133, 6, 382, 22);
 		pnlEndereco.add(cboLogradouro);
 		
-		JFormattedTextField txtCep = new JFormattedTextField((AbstractFormatter) null);
+		try {
+		txtCep = new JFormattedTextField(new MaskFormatter ("#####-###"));
 		txtCep.setBounds(133, 86, 382, 20);
 		pnlEndereco.add(txtCep);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		
 		txtLogradouro = new JTextField();
 		txtLogradouro.setColumns(10);
 		txtLogradouro.setBounds(133, 34, 382, 20);
 		pnlEndereco.add(txtLogradouro);
 		
-		textField_2 = new JTextField();
-		textField_2.setColumns(10);
-		textField_2.setBounds(133, 60, 382, 20);
-		pnlEndereco.add(textField_2);
+		txtNumero = new JTextField();
+		txtNumero.setColumns(10);
+		txtNumero.setBounds(133, 60, 382, 20);
+		pnlEndereco.add(txtNumero);
 		
 		txtComplemento = new JTextField();
 		txtComplemento.setColumns(10);
@@ -254,17 +288,22 @@ public class TelaFuncionario extends JFrame {
 		txtEmail.setBounds(165, 88, 339, 20);
 		p.add(txtEmail);
 		
-		JFormattedTextField txtTelefoneResidencial = new JFormattedTextField((AbstractFormatter) null);
+		try {
+		txtTelefoneResidencial = new JFormattedTextField(new MaskFormatter("(##)####-####"));
 		txtTelefoneResidencial.setBounds(165, 9, 339, 20);
 		p.add(txtTelefoneResidencial);
 		
-		JFormattedTextField txtTelefoneCelular = new JFormattedTextField((AbstractFormatter) null);
+		txtTelefoneCelular = new JFormattedTextField(new MaskFormatter("(##)9####-####"));
 		txtTelefoneCelular.setBounds(165, 34, 339, 20);
 		p.add(txtTelefoneCelular);
 		
-		JFormattedTextField txtTelefoneComercial = new JFormattedTextField((AbstractFormatter) null);
+		txtTelefoneComercial = new JFormattedTextField(new MaskFormatter("(##)####-####"));
 		txtTelefoneComercial.setBounds(165, 60, 339, 20);
 		p.add(txtTelefoneComercial);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 		
 		JPanel pnlTitulo = new JPanel();
 		pnlTitulo.setLayout(null);
@@ -285,6 +324,7 @@ public class TelaFuncionario extends JFrame {
 		pnlTitulo.add(lblGerenciarFuncionarios);
 		
 		JButton btnSalvar = new JButton("Salvar");
+		
 		btnSalvar.setIcon(new ImageIcon("C:\\Users\\hiago.lfsantos.SENACEDU\\Documents\\LojadeCalcados\\LojaCalcados\\imagens\\salvar-arquivo.png"));
 		btnSalvar.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		btnSalvar.setBackground(Color.WHITE);
@@ -298,62 +338,169 @@ public class TelaFuncionario extends JFrame {
 		btnConsultar.setBounds(885, 11, 158, 128);
 		pnlTitulo.add(btnConsultar);
 		
-		JPanel pnlCLiente = new JPanel();
-		pnlCLiente.setLayout(null);
-		pnlCLiente.setBackground(Color.WHITE);
-		pnlCLiente.setBounds(14, 646, 1059, 180);
-		contentPane.add(pnlCLiente);
-		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 1039, 158);
-		pnlCLiente.add(scrollPane);
-		
 		JPanel pnldp_1 = new JPanel();
 		pnldp_1.setLayout(null);
 		pnldp_1.setBackground(Color.WHITE);
-		pnldp_1.setBounds(10, 455, 514, 115);
+		pnldp_1.setBounds(10, 434, 514, 136);
 		contentPane.add(pnldp_1);
 		
 		JLabel lblCargo = new JLabel("Cargo");
 		lblCargo.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblCargo.setFont(new Font("Arial Black", Font.PLAIN, 12));
-		lblCargo.setBounds(10, 10, 145, 14);
+		lblCargo.setBounds(10, 29, 82, 14);
 		pnldp_1.add(lblCargo);
 		
 		JLabel lblsetor = new JLabel("Setor");
 		lblsetor.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblsetor.setFont(new Font("Arial Black", Font.PLAIN, 12));
-		lblsetor.setBounds(109, 36, 46, 14);
+		lblsetor.setBounds(46, 54, 46, 14);
 		pnldp_1.add(lblsetor);
 		
 		JLabel lblDataNascimento_1 = new JLabel("Gestor");
 		lblDataNascimento_1.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblDataNascimento_1.setFont(new Font("Arial Black", Font.PLAIN, 12));
-		lblDataNascimento_1.setBounds(10, 61, 145, 14);
+		lblDataNascimento_1.setBounds(19, 81, 73, 14);
 		pnldp_1.add(lblDataNascimento_1);
 		
 		JLabel lblExpediente = new JLabel("Expediente");
 		lblExpediente.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblExpediente.setFont(new Font("Arial Black", Font.PLAIN, 12));
-		lblExpediente.setBounds(73, 88, 82, 14);
+		lblExpediente.setBounds(10, 107, 82, 14);
 		pnldp_1.add(lblExpediente);
 		
 		txtCargo = new JTextField();
 		txtCargo.setColumns(10);
-		txtCargo.setBounds(165, 8, 339, 20);
+		txtCargo.setBounds(102, 27, 339, 20);
 		pnldp_1.add(txtCargo);
 		
 		JFormattedTextField txtSetor = new JFormattedTextField();
-		txtSetor.setBounds(165, 33, 339, 20);
+		txtSetor.setBounds(102, 52, 339, 20);
 		pnldp_1.add(txtSetor);
 		
 		JFormattedTextField txtGestor = new JFormattedTextField();
-		txtGestor.setBounds(165, 60, 162, 20);
+		txtGestor.setBounds(102, 79, 162, 20);
 		pnldp_1.add(txtGestor);
+		try {
+		txtExpediente = new JFormattedTextField(new  MaskFormatter("##:## - ##:##"));
+		txtExpediente.setBounds(102, 105, 38, 20);
+		pnldp_1.add(txtExpediente);
 		
-		JComboBox cboSexo_1 = new JComboBox();
-		cboSexo_1.setBounds(165, 85, 97, 22);
-		pnldp_1.add(cboSexo_1);
+		
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		btnSalvar.setBackground(new Color(255, 255, 255));
+		
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.WHITE);
+		panel.setBounds(534, 298, 530, 272);
+		contentPane.add(panel);
+		panel.setLayout(null);
+		
+		JButton btnNewButton_1 = new JButton("");
+		btnNewButton_1.setBackground(Color.LIGHT_GRAY);
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		btnNewButton_1.setIcon(new ImageIcon("C:\\Users\\hiago.lfsantos.SENACEDU\\Documents\\LojadeCalcados\\LojaCalcados\\imagens\\icons8-camera-50.png"));
+		btnNewButton_1.setBounds(225, 203, 93, 58);
+		panel.add(btnNewButton_1);
+		
+		JLabel lblfoto = new JLabel("Foto do funcion\u00E1rio");
+		lblfoto.setBackground(Color.WHITE);
+		lblfoto.setBounds(222, 25, 218, 138);
+		panel.add(lblfoto);
+		
+		JPanel pnldp_1_1 = new JPanel();
+		pnldp_1_1.setLayout(null);
+		pnldp_1_1.setBackground(Color.WHITE);
+		pnldp_1_1.setBounds(10, 298, 514, 123);
+		contentPane.add(pnldp_1_1);
+		
+		JLabel lblUsuario = new JLabel("Usuaio:");
+		lblUsuario.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblUsuario.setFont(new Font("Arial Black", Font.PLAIN, 12));
+		lblUsuario.setBounds(70, 32, 82, 14);
+		pnldp_1_1.add(lblUsuario);
+		
+		JLabel lblsenha = new JLabel("Senha");
+		lblsenha.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblsenha.setFont(new Font("Arial Black", Font.PLAIN, 12));
+		lblsenha.setBounds(106, 57, 46, 14);
+		pnldp_1_1.add(lblsenha);
+		
+		JLabel lblNivelAcesso = new JLabel("Nivel Acesso");
+		lblNivelAcesso.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblNivelAcesso.setFont(new Font("Arial Black", Font.PLAIN, 12));
+		lblNivelAcesso.setBounds(49, 82, 103, 14);
+		pnldp_1_1.add(lblNivelAcesso);
+		
+		txtUsuario = new JTextField();
+		txtUsuario.setColumns(10);
+		txtUsuario.setBounds(162, 27, 162, 20);
+		pnldp_1_1.add(txtUsuario);
+		
+		JFormattedTextField txtNivelAcesso = new JFormattedTextField();
+		txtNivelAcesso.setBounds(162, 80, 162, 20);
+		pnldp_1_1.add(txtNivelAcesso);
+		
+		txtSenha = new JPasswordField();
+		txtSenha.setBounds(162, 55, 162, 20);
+		pnldp_1_1.add(txtSenha);
+		
+		btnSalvar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				//Passagem dos dados para o objeto endereco
+				end.setTipo(cboLogradouro.getSelectedItem().toString());
+				end.setLogradouro(txtLogradouro.getText());
+				end.setNumero(txtNumero.getText());
+				end.setComplemento(txtComplemento.getText());
+				end.setCep(txtCep.getText());
+				end.setBairro(txtBairro.getText());
+				end.setCidade(txtCidade.getText());
+				end.setEstado(txtEstado.getText());
+				String rsend = daoend.create(end);
+				end.setIdEndereco(Long.parseLong(rsend));
+				
+				//Passagem dos dados para o objeto contato
+				ct.setTelefoneResidencial(txtTelefoneResidencial.getText());
+				ct.setTelefoneCelular(txtTelefoneCelular.getText());
+				ct.setTelefoneComercial(txtTelefoneComercial.getText());
+				ct.setEmail(txtEmail.getText());
+				String rsct = daoct.create(ct);
+				ct.setIdContato(Long.parseLong(rsct));
+			
+				//Passagem dos dados para o objeto DadosPessoais
+				dp.setCpf(txtCpf.getText());
+				dp.setSexo(cboSexo.getSelectedItem().toString());
+				dp.setDataNascimento(Date.valueOf(txtDataNascimento.getText()));
+				String rsdp = daodp.create(dp);
+				dp.setIdDadosPessoais(Long.parseLong(rsdp));
+				
+				//Passagem dos dados para o objeto Usuario
+				us.setNomeUsuario(txtUsuario.getText());
+				us.setSenha(txtSenha.getText());
+				us.setNivelAcesso(txtNivelAcesso.getText());
+				String rsus = daous.create(us);
+				us.setIdUsuario(Long.parseLong(rsus));
+				
+				//Passagem dos dados par o objeto Funcionario
+				funcionario.setNomeFuncionario(txtNomeFun.getText());
+				funcionario.setCargo(txtCargo.getText());
+				funcionario.setSetor(txtSetor.getText());
+				funcionario.setGestor(Long.parseLong(txtGestor.getText()));
+				funcionario.setExpediente(txtExpediente.getText());
+				funcionario.setfoto("funcionario.jpg");
+				funcionario.setDadosPessoais(dp);
+				funcionario.setEndereco(end);
+				funcionario.setContato(ct);
+				funcionario.setUsuario(us);
+				JOptionPane.showMessageDialog(null, daofun.create(funcionario));
+				
+			}
+		});
+		
 	}
-
 }
